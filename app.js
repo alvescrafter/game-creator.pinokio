@@ -35,6 +35,14 @@
       colorBg: '#0a0a1a',
       vfx: '',
     },
+    gameMenu: {
+      menuType: '',
+      menuOptions: [],
+      hudElements: [],
+      gameActions: [],
+      gameOverType: '',
+      escBehavior: '',
+    },
     audio: {
       musicMood: '',
       sfx: '',
@@ -46,7 +54,7 @@
     framework: 'Vanilla JS/Canvas',
     singleFile: true,
     assetHandling: 'Use placeholder colored rectangles and simple shapes',
-    maxTokens: 20000,
+    maxTokens: 50000,
   };
 
   const DEFAULT_API = {
@@ -62,6 +70,7 @@
     coreIdentity: true,
     mechanics: true,
     visuals: true,
+    gameMenu: true,
     audio: true,
   };
 
@@ -267,10 +276,21 @@
     systemPrompt += '\n\nIMPORTANT: Deliver the ENTIRE game in a SINGLE HTML file including all CSS and JavaScript. Ensure all logic is contained within the file. Do NOT split into separate files.';
 
     // Token limit constraint
-    systemPrompt += '\n\nCRITICAL: The entire game code MUST be below 20,000 tokens. Keep the code concise and efficient while maintaining full functionality.';
+    systemPrompt += '\n\nCRITICAL: The entire game code MUST be below 50,000 tokens. Keep the code concise and efficient while maintaining full functionality.';
 
     // Always include framework instruction
     systemPrompt += `\n\nUse ${TECH_DEFAULTS.framework} for rendering and game logic.`;
+
+    // Mandatory game structure
+    systemPrompt += '\n\nMANDATORY GAME STRUCTURE: Every game you generate MUST include:';
+    systemPrompt += '\n1. A Title Screen / Main Menu that appears first when the game loads.';
+    systemPrompt += '\n2. The Title Screen must show the game title and have clearly styled, clickable buttons (at minimum "Start Game").';
+    systemPrompt += '\n3. Pressing ESC during gameplay MUST pause the game and show a Pause Menu (unless the user specifies ESC should do nothing).';
+    systemPrompt += '\n4. The Pause Menu must include "Resume" and "Back to Menu" buttons.';
+    systemPrompt += '\n5. A Game Over screen with the final score and a "Play Again" / "Retry" button.';
+    systemPrompt += '\n6. All navigation between game states (Title Screen → Gameplay → Pause → Game Over) must be seamless with no page reloads.';
+    systemPrompt += '\n7. Use a state machine or game state variable to manage transitions between: TITLE, PLAYING, PAUSED, GAME_OVER.';
+    systemPrompt += '\n8. All menu buttons must be consistently styled, clearly visible, and have hover effects.';
 
     // ── User Prompt: Game Concept ──
     let userPrompt = '';
@@ -309,6 +329,23 @@
       userPrompt += '\n';
     }
 
+    if (enabled.gameMenu) {
+      userPrompt += '**Game Menu & Controls:**\n';
+      if (state.gameMenu.menuType) userPrompt += `- Menu Type: ${state.gameMenu.menuType}\n`;
+      if (state.gameMenu.menuOptions.length > 0) {
+        userPrompt += `- Menu Options: ${state.gameMenu.menuOptions.join(', ')}\n`;
+      }
+      if (state.gameMenu.hudElements.length > 0) {
+        userPrompt += `- HUD Elements: ${state.gameMenu.hudElements.join(', ')}\n`;
+      }
+      if (state.gameMenu.gameActions.length > 0) {
+        userPrompt += `- Standard Game Actions: ${state.gameMenu.gameActions.join(', ')}\n`;
+      }
+      if (state.gameMenu.gameOverType) userPrompt += `- Game Over Screen: ${state.gameMenu.gameOverType}\n`;
+      if (state.gameMenu.escBehavior) userPrompt += `- ESC Key Behavior: ${state.gameMenu.escBehavior}\n`;
+      userPrompt += '\n';
+    }
+
     // Tech stack is always included in background
     userPrompt += '**Technical Instructions:**\n';
     userPrompt += `- Framework: ${TECH_DEFAULTS.framework}\n`;
@@ -325,10 +362,21 @@
 
     userPrompt += '**Output Requirements:**\n';
     userPrompt += '- Generate a complete, playable game based on the above specifications.\n';
-    userPrompt += '- Include all necessary HTML, CSS, and JavaScript.\n';
+    userPrompt += '- Include all necessary HTML, CSS, and JavaScript in a SINGLE self-contained HTML file.\n';
     userPrompt += '- Make the game immediately playable with no additional setup.\n';
     userPrompt += '- Add clear visual feedback for all player actions.\n';
-    userPrompt += '- Include a simple HUD showing score/health if applicable.\n';
+    userPrompt += '- Include a HUD showing score/health/lives/timer as applicable.\n';
+    userPrompt += '\n';
+    userPrompt += '**MANDATORY Game Structure Requirements:**\n';
+    userPrompt += '- The game MUST have a Title Screen / Main Menu that appears first when the game loads.\n';
+    userPrompt += '- The Title Screen MUST include at minimum: the game title, a "Start Game" button, and any other menu options specified above.\n';
+    userPrompt += '- Pressing ESC during gameplay MUST pause the game and show a Pause Menu (unless ESC behavior is set to "Nothing").\n';
+    userPrompt += '- The Pause Menu MUST include a "Resume" button and a "Back to Menu" button that returns to the Title Screen.\n';
+    userPrompt += '- The game MUST have a Game Over screen with the final score and a "Play Again" or "Retry" button.\n';
+    userPrompt += '- All buttons in menus MUST be clearly styled, hoverable, and clickable — use consistent button styling throughout.\n';
+    userPrompt += '- Navigation between game states (Title Screen → Gameplay → Pause → Game Over) MUST be seamless with no page reloads.\n';
+    userPrompt += '- Use a state machine or game state variable to manage transitions between: TITLE, PLAYING, PAUSED, GAME_OVER.\n';
+    userPrompt += '- The entire game code MUST be under 50,000 tokens. Keep the code concise and efficient while maintaining full functionality.\n';
 
     return { systemPrompt, userPrompt };
   }
@@ -367,6 +415,16 @@
     // Permadeath + Idle (unusual combo)
     if (state.mechanics.tags.includes('Permadeath') && state.coreIdentity.genre === 'Idle') {
       conflicts.push('Permadeath in an Idle game can be frustrating. Consider removing one or the other.');
+    }
+
+    // No menu type selected but game actions selected
+    if (state.gameMenu.menuType === 'No Menu' && state.gameMenu.gameActions.length > 0) {
+      conflicts.push('You selected "No Menu" but also chose game actions. These actions need a menu to appear in.');
+    }
+
+    // ESC set to "Nothing" but Pause/Resume selected
+    if (state.gameMenu.escBehavior === 'Nothing' && state.gameMenu.gameActions.includes('Pause/Resume (ESC)')) {
+      conflicts.push('ESC is set to "Nothing" but "Pause/Resume (ESC)" is selected as a game action. These conflict.');
     }
 
     return conflicts;
@@ -1116,6 +1174,20 @@
       btn.classList.toggle('active', isActive);
     });
 
+    // Sync game menu tags
+    document.querySelectorAll('#menuOptions-tags .tag-btn').forEach(btn => {
+      const isActive = (state.gameMenu.menuOptions || []).includes(btn.dataset.value);
+      btn.classList.toggle('active', isActive);
+    });
+    document.querySelectorAll('#hudElements-tags .tag-btn').forEach(btn => {
+      const isActive = (state.gameMenu.hudElements || []).includes(btn.dataset.value);
+      btn.classList.toggle('active', isActive);
+    });
+    document.querySelectorAll('#gameActions-tags .tag-btn').forEach(btn => {
+      const isActive = (state.gameMenu.gameActions || []).includes(btn.dataset.value);
+      btn.classList.toggle('active', isActive);
+    });
+
     // Update derived labels
     updateToneLabel();
     updateTempLabel();
@@ -1150,6 +1222,20 @@
     state.mechanics.tags = [];
     document.querySelectorAll('#mechanics-tags .tag-btn.active').forEach(btn => {
       state.mechanics.tags.push(btn.dataset.value);
+    });
+
+    // Sync game menu tags
+    state.gameMenu.menuOptions = [];
+    document.querySelectorAll('#menuOptions-tags .tag-btn.active').forEach(btn => {
+      state.gameMenu.menuOptions.push(btn.dataset.value);
+    });
+    state.gameMenu.hudElements = [];
+    document.querySelectorAll('#hudElements-tags .tag-btn.active').forEach(btn => {
+      state.gameMenu.hudElements.push(btn.dataset.value);
+    });
+    state.gameMenu.gameActions = [];
+    document.querySelectorAll('#gameActions-tags .tag-btn.active').forEach(btn => {
+      state.gameMenu.gameActions.push(btn.dataset.value);
     });
   }
 
@@ -1316,6 +1402,36 @@
 
     // ── Mechanics tags ──
     document.querySelectorAll('#mechanics-tags .tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        syncStateFromUI();
+        updatePromptPreview();
+        saveState();
+      });
+    });
+
+    // ── Game Menu: Menu Options tags ──
+    document.querySelectorAll('#menuOptions-tags .tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        syncStateFromUI();
+        updatePromptPreview();
+        saveState();
+      });
+    });
+
+    // ── Game Menu: HUD Elements tags ──
+    document.querySelectorAll('#hudElements-tags .tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        syncStateFromUI();
+        updatePromptPreview();
+        saveState();
+      });
+    });
+
+    // ── Game Menu: Game Actions tags ──
+    document.querySelectorAll('#gameActions-tags .tag-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         btn.classList.toggle('active');
         syncStateFromUI();

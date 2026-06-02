@@ -201,6 +201,96 @@
         </div>
       </details>
 
+      <!-- Module D: Game Menu & Controls -->
+      <details class="module-card" data-module="gameMenu" open>
+        <summary class="module-header">
+          <span class="module-icon">🕹️</span>
+          <span class="module-title">Game Menu & Controls</span>
+          <label class="toggle-wrap" onclick="event.stopPropagation()">
+            <input type="checkbox" class="module-toggle" data-module-key="gameMenu" checked>
+            <span class="toggle-switch"></span>
+          </label>
+        </summary>
+        <div class="module-body">
+          <button class="module-scroll-top" title="Scroll up">▲</button>
+          <p class="module-desc">Define in-game menus, controls, and standard UI elements.</p>
+
+          <div class="field-group">
+            <label for="menuType" class="field-label">Menu Type</label>
+            <select id="menuType" class="field-select" data-path="gameMenu.menuType">
+              <option value="">— Select Menu Type —</option>
+              <option value="Title Screen + Pause Menu">Title Screen + Pause Menu</option>
+              <option value="Title Screen Only">Title Screen Only</option>
+              <option value="Minimal Overlay">Minimal Overlay</option>
+              <option value="No Menu">No Menu (jump straight in)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Menu Options <span class="field-hint">(click to toggle)</span></label>
+            <div id="menuOptions-tags" class="tag-grid">
+              <button class="tag-btn" data-value="Start Game">Start Game</button>
+              <button class="tag-btn" data-value="Continue">Continue</button>
+              <button class="tag-btn" data-value="Settings">Settings</button>
+              <button class="tag-btn" data-value="How to Play">How to Play</button>
+              <button class="tag-btn" data-value="High Scores">High Scores</button>
+              <button class="tag-btn" data-value="Credits">Credits</button>
+              <button class="tag-btn" data-value="Quit">Quit</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">HUD Elements <span class="field-hint">(click to toggle)</span></label>
+            <div id="hudElements-tags" class="tag-grid">
+              <button class="tag-btn" data-value="Score">Score</button>
+              <button class="tag-btn" data-value="Health Bar">Health Bar</button>
+              <button class="tag-btn" data-value="Lives">Lives</button>
+              <button class="tag-btn" data-value="Timer">Timer</button>
+              <button class="tag-btn" data-value="Level Indicator">Level Indicator</button>
+              <button class="tag-btn" data-value="Minimap">Minimap</button>
+              <button class="tag-btn" data-value="Inventory Bar">Inventory Bar</button>
+              <button class="tag-btn" data-value="Combo Counter">Combo Counter</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Standard Game Actions <span class="field-hint">(click to toggle)</span></label>
+            <div id="gameActions-tags" class="tag-grid">
+              <button class="tag-btn" data-value="Pause/Resume (ESC)">Pause/Resume (ESC)</button>
+              <button class="tag-btn" data-value="Restart Level">Restart Level</button>
+              <button class="tag-btn" data-value="Save Game">Save Game</button>
+              <button class="tag-btn" data-value="Load Game">Load Game</button>
+              <button class="tag-btn" data-value="Mute/Unmute">Mute/Unmute</button>
+              <button class="tag-btn" data-value="Back to Menu">Back to Menu</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="gameOverType" class="field-label">Game Over Screen</label>
+            <select id="gameOverType" class="field-select" data-path="gameMenu.gameOverType">
+              <option value="">— Select —</option>
+              <option value="Score Summary + Retry">Score Summary + Retry</option>
+              <option value="Simple Retry">Simple Retry</option>
+              <option value="Game Over Animation">Game Over Animation</option>
+              <option value="Return to Menu">Return to Menu</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="escBehavior" class="field-label">ESC Key Behavior</label>
+            <select id="escBehavior" class="field-select" data-path="gameMenu.escBehavior">
+              <option value="">— Select —</option>
+              <option value="Pause Game + Show Menu">Pause Game + Show Menu</option>
+              <option value="Pause Game Only">Pause Game Only</option>
+              <option value="Back to Title Screen">Back to Title Screen</option>
+              <option value="Nothing">Nothing (disabled)</option>
+            </select>
+          </div>
+
+          <button class="module-scroll-bottom" title="Scroll down">▼</button>
+        </div>
+      </details>
+
       <!-- Module E: Audio & Soundscape -->
       <details class="module-card" data-module="audio">
         <summary class="module-header">

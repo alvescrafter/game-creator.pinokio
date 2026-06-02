@@ -29,7 +29,7 @@ Use the **left sidebar** to define your game across 5 modules:
 | 🎯 **Core Identity** | Genre, setting/theme, and tone (dark ↔ bright) |
 | ⚙️ **Mechanics & Gameplay** | Game mechanics (tags), specific rules, difficulty curve |
 | 🎨 **Visual & Aesthetic** | Art style, color palette, visual effects |
-| 💻 **Technical Stack** | Framework, single/multi-file mode, asset handling, token limit |
+| �️ **Game Menu & Controls** | Menu type, menu options, HUD elements, game actions, game over screen, ESC behavior |
 | 🔊 **Audio & Soundscape** | Music mood, sound effects |
 
 > **Tip:** Each module has a **toggle switch** — turn off any module you don't want included in the prompt.
@@ -70,6 +70,18 @@ After generating, use the **Refine bar** at the bottom of the sandbox:
 | **Art Style** | Pixel Art, Minimalist Vector, ASCII, Low-Poly 3D, Hand-drawn, Flat Design, Retro CRT, Neon Glow |
 | **Color Palette** | Pick Primary, Secondary, and Background colors |
 | **Visual Effects** | Free text — describe VFX (e.g. "Screen shake on impact", "Particle explosions") |
+
+### 🕹️ Game Menu & Controls
+| Field | Description |
+|-------|-------------|
+| **Menu Type** | Title Screen + Pause Menu, Title Screen Only, Minimal Overlay, No Menu |
+| **Menu Options** | Click-to-toggle: Start Game, Continue, Settings, How to Play, High Scores, Credits, Quit |
+| **HUD Elements** | Click-to-toggle: Score, Health Bar, Lives, Timer, Level Indicator, Minimap, Inventory Bar, Combo Counter |
+| **Standard Game Actions** | Click-to-toggle: Pause/Resume (ESC), Restart Level, Save Game, Load Game, Mute/Unmute, Back to Menu |
+| **Game Over Screen** | Score Summary + Retry, Simple Retry, Game Over Animation, Return to Menu |
+| **ESC Key Behavior** | Pause Game + Show Menu, Pause Game Only, Back to Title Screen, Nothing (disabled) |
+
+> **Note:** Every game is generated with mandatory structure: Title Screen, Pause Menu (ESC), and Game Over screen. The Game Menu module lets you customise these.
 
 ### 💻 Technical Stack
 | Field | Description |
@@ -149,13 +161,14 @@ After generating, use the **Refine bar** at the bottom of the sandbox:
 
 1. **Start simple** — Choose a genre and a few mechanics, then refine later
 2. **Use Single File Mode** — Keeps everything in one HTML file for easy sharing
-3. **Increase Max Tokens for complex games** — 3D games and RPGs need more tokens (8192+)
+3. **Increase Max Tokens for complex games** — 3D games and RPGs need more tokens (8192+). The default limit is 50,000 tokens for maximum game complexity.
 4. **Lower temperature for precise games** — Set to 0.3–0.5 for puzzle/logic games
 5. **Higher temperature for creative games** — Set to 0.8–1.2 for wild, creative results
-6. **Use the Refine bar** — Instead of regenerating from scratch, refine incrementally
-7. **Save templates** — If you find a configuration that works well, save it as a template
-8. **Check Prompt Preview** — Review the assembled prompt before generating to make sure it captures your intent
-9. **Conflict warnings** — The app will warn you about incompatible settings (e.g. Three.js + Pixel Art)
+6. **Use the Game Menu module** — Every game gets a Title Screen, Pause Menu (ESC), and Game Over screen by default. Customise these in the 🕹️ Game Menu & Controls module.
+7. **Use the Refine bar** — Instead of regenerating from scratch, refine incrementally
+8. **Save templates** — If you find a configuration that works well, save it as a template
+9. **Check Prompt Preview** — Review the assembled prompt before generating to make sure it captures your intent
+10. **Conflict warnings** — The app will warn you about incompatible settings (e.g. Three.js + Pixel Art, or No Menu + game actions)
 
 ---
 
