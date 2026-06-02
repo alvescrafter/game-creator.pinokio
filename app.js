@@ -97,6 +97,12 @@
       defaultModel: '',
       needsKey: false,
     },
+    custom: {
+      baseUrl: '',
+      models: [],
+      defaultModel: '',
+      needsKey: true,
+    },
   };
 
   // ── App State ──
@@ -467,7 +473,7 @@
     if (lower.includes('localhost:11434') || lower.includes('ollama')) return 'ollama';
     if (lower.includes('localhost:1234') || lower.includes('lmstudio')) return 'lmstudio';
     if (lower.includes('openai')) return 'openai';
-    return 'openai'; // default to OpenAI-compatible
+    return 'custom'; // default to custom for unknown URLs
   }
 
   // ═══════════════════════════════════════════════
@@ -1338,10 +1344,12 @@
       updateTempLabel();
 
       // Highlight matching provider preset
+      let matchedProvider = false;
       document.querySelectorAll('.provider-btn').forEach(btn => {
         const preset = PROVIDER_PRESETS[btn.dataset.provider];
-        if (preset && apiSettings.baseUrl === preset.baseUrl) {
+        if (preset && preset.baseUrl && apiSettings.baseUrl === preset.baseUrl) {
           btn.classList.add('active');
+          matchedProvider = true;
           // Populate model dropdown for this provider
           const modelSelect = document.getElementById('modelPreset');
           modelSelect.innerHTML = '<option value="">— Quick Select —</option>';
@@ -1355,6 +1363,11 @@
           btn.classList.remove('active');
         }
       });
+      // If no preset matched and there's a custom URL, highlight Custom API
+      if (!matchedProvider && apiSettings.baseUrl) {
+        const customBtn = document.querySelector('.provider-btn[data-provider="custom"]');
+        if (customBtn) customBtn.classList.add('active');
+      }
 
       openModal('modal-settings');
     });
@@ -1387,11 +1400,21 @@
         document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        // Fill in base URL
-        document.getElementById('apiBaseUrl').value = preset.baseUrl;
+        // Fill in base URL (clear for custom — user enters their own)
+        if (provider === 'custom') {
+          document.getElementById('apiBaseUrl').value = '';
+          document.getElementById('apiBaseUrl').placeholder = 'https://your-api-endpoint.com/v1';
+        } else {
+          document.getElementById('apiBaseUrl').value = preset.baseUrl;
+        }
 
-        // Fill in default model
-        document.getElementById('modelName').value = preset.defaultModel;
+        // Fill in default model (clear for custom)
+        if (provider === 'custom') {
+          document.getElementById('modelName').value = '';
+          document.getElementById('modelName').placeholder = 'Enter your model name';
+        } else {
+          document.getElementById('modelName').value = preset.defaultModel;
+        }
 
         // Populate model quick-select dropdown
         const modelSelect = document.getElementById('modelPreset');
@@ -1407,6 +1430,8 @@
         if (!preset.needsKey) {
           document.getElementById('apiKey').value = '';
           document.getElementById('apiKey').placeholder = 'Not required for local LLMs';
+        } else if (provider === 'custom') {
+          document.getElementById('apiKey').placeholder = 'Enter your API key (if required)';
         } else {
           document.getElementById('apiKey').placeholder = 'sk-... (enter your API key)';
         }

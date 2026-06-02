@@ -337,6 +337,29 @@ body {
   box-shadow: 0 0 16px var(--accent-glow);
 }
 
+/* ── Connect Your AI Button ── */
+.btn-connect-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: 1px solid #a855f7;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(192, 132, 252, 0.10));
+  color: #a855f7;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-connect-ai:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(192, 132, 252, 0.20));
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+}
+
 /* ── API Tutorial Link ── */
 .api-tutorial-link {
   display: block;
