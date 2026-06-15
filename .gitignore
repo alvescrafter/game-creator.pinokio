@@ -1,0 +1,24 @@
+# Personal / reference files (not part of the Game Creator app)
+fb profile pic.png
+fb screenshot.png
+Pinokio screenshot.png
+eb1c1800-d92e-4578-a58f-e043d109e224.jpg
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Pinokio runtime artifacts
+pinokio/
