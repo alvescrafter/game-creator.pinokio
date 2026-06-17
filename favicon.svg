@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#3b82f6"/>
+  <!-- Game controller body -->
+  <rect x="14" y="22" width="36" height="20" rx="8" ry="8" fill="white"/>
+  <!-- D-pad left -->
+  <rect x="18" y="29" width="10" height="3" rx="1" fill="#3b82f6"/>
+  <rect x="22" y="25" width="3" height="10" rx="1" fill="#3b82f6"/>
+  <!-- Buttons right -->
+  <circle cx="42" cy="28" r="2.5" fill="#3b82f6"/>
+  <circle cx="46" cy="32" r="2.5" fill="#3b82f6"/>
+  <circle cx="38" cy="32" r="2.5" fill="#3b82f6"/>
+  <circle cx="42" cy="36" r="2.5" fill="#3b82f6"/>
+  <!-- Lightning bolt (AI/generate symbol) -->
+  <path d="M34 18 L30 26 L34 26 L30 34" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Sparkle dots -->
+  <circle cx="38" cy="16" r="1.5" fill="#fbbf24"/>
+  <circle cx="26" cy="20" r="1" fill="#fbbf24"/>
+</svg>

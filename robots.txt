@@ -1,0 +1,8 @@
+# AI Game Creator — https://aigamecreator.netlify.app/
+# Allow all search engines to crawl and index
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://aigamecreator.netlify.app/sitemap.xml
