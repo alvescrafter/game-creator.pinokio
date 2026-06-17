@@ -17,6 +17,8 @@
   const MAX_HISTORY = 50;
 
   // ── Default State ──
+  // Pre-selected defaults ensure the mandatory game structure is always satisfied
+  // even if the user never touches the sidebar modules.
   const DEFAULT_STATE = {
     coreIdentity: {
       genre: '',
@@ -36,12 +38,12 @@
       vfx: '',
     },
     gameMenu: {
-      menuType: '',
-      menuOptions: [],
+      menuType: 'Title Screen + Pause Menu',
+      menuOptions: ['Start Game'],
       hudElements: [],
-      gameActions: [],
-      gameOverType: '',
-      escBehavior: '',
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      gameOverType: 'Score Summary + Retry',
+      escBehavior: 'Pause Game + Show Menu',
     },
     audio: {
       musicMood: '',
@@ -55,6 +57,164 @@
     singleFile: true,
     assetHandling: 'Use placeholder colored rectangles and simple shapes',
     maxTokens: 50000,
+  };
+
+  // ── Genre-Specific Implementation Requirements ──
+  // Injected into the prompt to ensure every genre gets its mandatory gameplay elements
+  const GENRE_REQUIREMENTS = {
+    Shooter: [
+      'A player ship/character positioned at the bottom of the canvas, drawn as a distinct colored shape (min 24x24px).',
+      'The player moves LEFT/RIGHT with Arrow keys or A/D, and fires bullets with SPACEBAR.',
+      'Bullets are drawn as small rectangles moving upward from the player position.',
+      'Enemies spawn at the top of the canvas and move downward toward the player.',
+      'Collision detection between bullets and enemies (bullet-enemy overlap removes both and adds score).',
+      'Collision detection between enemies and the player (reduces health/lives).',
+      'Score increases for each enemy destroyed. Display score in the HUD.',
+      'Player has health or lives displayed in the HUD. Game over when health/lives reach zero.',
+    ],
+    Platformer: [
+      'A player character drawn as a distinct colored shape (min 24x24px) that can move LEFT/RIGHT and JUMP.',
+      'Arrow keys or A/D for left/right movement, SPACEBAR or W or Up Arrow for jumping.',
+      'Gravity constantly pulls the player downward when not on a platform.',
+      'Multiple platforms drawn as rectangles with collision detection (player lands on top of them).',
+      'Collectibles (coins/items) drawn as small shapes that the player can pick up by overlapping.',
+      'Hazards (spikes/lava) that damage or kill the player on contact.',
+      'A level goal (flag/door) that advances to the next level or triggers a win condition.',
+      'Score or collectible count displayed in the HUD.',
+    ],
+    Puzzle: [
+      'A grid or pattern-based play area where the player interacts with elements.',
+      'Click with mouse or use arrow keys to manipulate puzzle pieces/tiles.',
+      'A clear win condition (match colors, clear board, reach target, solve pattern).',
+      'Visual feedback when pieces move, match, or are placed correctly.',
+      'A move counter or score displayed in the HUD.',
+      'The puzzle must be solvable and have at least one valid solution.',
+    ],
+    RPG: [
+      'A player character with stats: HP (health), Level, and XP (experience points) displayed in the HUD.',
+      'Player moves on a map with Arrow keys or WASD.',
+      'An enemy or combat system: enemies have HP, player attacks reduce enemy HP, enemy attacks reduce player HP.',
+      'Defeating enemies grants XP; reaching XP thresholds levels up the player (increases max HP / attack).',
+      'An inventory system: items can be picked up and used (potions heal HP, etc.).',
+      'At least one NPC with a dialogue system (text box with messages).',
+      'A win condition (defeat a boss, reach a location, collect an item).',
+    ],
+    Idle: [
+      'A primary resource (e.g. gold, cookies, energy) with a large number display in the HUD.',
+      'A clickable button or area that generates the primary resource on each click.',
+      'Auto-generation: at least one passive producer that generates resources per second.',
+      'An upgrade system: spend resources to increase click value or auto-generation rate.',
+      'Upgrades have scaling cost (each purchase costs more than the last).',
+      'Numbers should be formatted with suffixes (K, M, B) for large values.',
+    ],
+    Racing: [
+      'A vehicle the player controls, drawn as a distinct colored shape.',
+      'Arrow keys or A/D for steering LEFT/RIGHT, W/Up to accelerate, S/Down to brake.',
+      'A scrolling track/road that moves to create the illusion of forward motion.',
+      'Obstacles on the track that the player must avoid (collision slows or damages the vehicle).',
+      'Speed displayed in the HUD. A lap timer or countdown timer displayed in the HUD.',
+      'Collision with obstacles has a penalty (slow down, lose health, or time penalty).',
+    ],
+    Strategy: [
+      'A grid-based map where units and buildings are placed.',
+      'Unit selection: click to select a unit, click again to move/command it.',
+      'Resource management: at least one resource (gold/energy/food) that is produced over time.',
+      'Unit production: spend resources to create new units from a building.',
+      'An AI opponent that also produces units and attacks the player.',
+      'A win condition (destroy enemy base, reach resource target, eliminate all enemy units).',
+    ],
+    Roguelike: [
+      'A procedurally generated dungeon: rooms connected by corridors, drawn on a tile grid.',
+      'Player character moves with Arrow keys on the grid (one tile per press).',
+      'Turn-based: enemies move after the player moves.',
+      'Player stats: HP, attack power, and level displayed in the HUD.',
+      'Items: potions (heal HP), weapons (increase attack) that can be picked up.',
+      'Enemies with HP that the player fights by moving into them.',
+      'Permadeath: when HP reaches zero, the game is over with no respawn.',
+      'Stairs/exit to descend to the next level (regenerates a new dungeon).',
+    ],
+    Simulation: [
+      'A managed system with at least 2 resource types (e.g. money, population, energy).',
+      'Time progression: the simulation advances on a timer (ticks every second or via requestAnimationFrame).',
+      'Building/placing mechanic: click to place buildings or assign resources.',
+      'Cause and effect: buildings produce resources, resources enable more buildings.',
+      'Stats display: current resources, population, or other metrics shown in the HUD.',
+      'Random events or challenges that affect the system (e.g. random income, random cost).',
+    ],
+    'Visual Novel': [
+      'A story text box at the bottom of the screen displaying dialogue/narration.',
+      'Character portraits or scene backgrounds drawn on canvas (colored shapes are fine).',
+      'Dialogue advances on click or SPACEBAR/ENTER press.',
+      'At least 2 branching choices presented as clickable buttons that change the story path.',
+      'Scene changes: background color or portrait changes when the scene shifts.',
+      'Character names displayed above the dialogue text.',
+    ],
+  };
+
+  // ── Genre-Based Sidebar Auto-Configuration ──
+  // When a genre is selected, these defaults are applied to the sidebar modules.
+  // The user can still toggle/override individual tags afterwards.
+  const GENRE_DEFAULTS = {
+    Shooter: {
+      mechanics: ['Health Bar', 'Collectibles'],
+      hudElements: ['Score', 'Health Bar', 'Lives'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    Platformer: {
+      mechanics: ['Double Jump', 'Gravity', 'Collectibles'],
+      hudElements: ['Score', 'Lives', 'Level Indicator'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    Puzzle: {
+      mechanics: [],
+      hudElements: ['Score', 'Timer'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    RPG: {
+      mechanics: ['Inventory System', 'Health Bar', 'Leveling Up', 'Dialogue System'],
+      hudElements: ['Health Bar', 'Level Indicator', 'Inventory Bar'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game', 'How to Play'],
+    },
+    Idle: {
+      mechanics: ['Leveling Up'],
+      hudElements: ['Score'],
+      gameActions: ['Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    Racing: {
+      mechanics: ['Physics'],
+      hudElements: ['Timer', 'Score'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    Strategy: {
+      mechanics: ['Inventory System'],
+      hudElements: ['Score', 'Level Indicator'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game', 'How to Play'],
+    },
+    Roguelike: {
+      mechanics: ['Permadeath', 'Procedural Generation', 'Inventory System', 'Leveling Up'],
+      hudElements: ['Health Bar', 'Level Indicator', 'Inventory Bar'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    Simulation: {
+      mechanics: ['Leveling Up'],
+      hudElements: ['Score', 'Level Indicator'],
+      gameActions: ['Pause/Resume (ESC)', 'Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
+    'Visual Novel': {
+      mechanics: ['Dialogue System'],
+      hudElements: [],
+      gameActions: ['Back to Menu'],
+      menuOptions: ['Start Game'],
+    },
   };
 
   const DEFAULT_API = {
@@ -162,7 +322,7 @@
 
   function saveState() {
     try {
-      localStorage.setItem(KEYS.STATE, JSON.stringify({ state, moduleEnabled }));
+      localStorage.setItem(KEYS.STATE, JSON.stringify({ state, moduleEnabled, promptLocked, customPromptText }));
     } catch (e) {
       console.warn('Failed to save state:', e);
     }
@@ -175,6 +335,8 @@
         const parsed = JSON.parse(raw);
         if (parsed.state) state = { ...deepClone(DEFAULT_STATE), ...parsed.state };
         if (parsed.moduleEnabled) moduleEnabled = { ...deepClone(DEFAULT_MODULE_ENABLED), ...parsed.moduleEnabled };
+        if (typeof parsed.promptLocked === 'boolean') promptLocked = parsed.promptLocked;
+        if (typeof parsed.customPromptText === 'string') customPromptText = parsed.customPromptText;
       }
     } catch (e) {
       console.warn('Failed to load state:', e);
@@ -257,7 +419,6 @@
   // ═══════════════════════════════════════════════
 
   function assemblePrompt() {
-    const parts = [];
     const enabled = {};
 
     // Check which modules are enabled
@@ -265,34 +426,92 @@
       enabled[cb.dataset.moduleKey] = cb.checked;
     });
 
-    // ── System Prompt ──
-    let systemPrompt = 'You are an expert Game Developer';
+    // ═════════════════════════════════════════════
+    // SYSTEM PROMPT — Prescriptive, non-negotiable rules
+    // ═════════════════════════════════════════════
+    let systemPrompt = `You are an expert HTML5 Game Developer proficient in Vanilla JS and HTML5 Canvas. You generate complete, fully playable games in a single HTML file.`;
 
-    // Always include tech stack context in background
-    systemPrompt += ` proficient in ${TECH_DEFAULTS.framework}`;
-    systemPrompt += '.';
+    // ── ABSOLUTE RULES ──
+    systemPrompt += '\n\n═══ ABSOLUTE RULES (NON-NEGOTIABLE) ═══';
+    systemPrompt += '\n1. Deliver the ENTIRE game in a SINGLE HTML file — all HTML, CSS, and JavaScript inline. No external files, no external scripts, no CDN links.';
+    systemPrompt += '\n2. Use HTML5 <canvas> for all game rendering. Get the 2D context with getContext("2d").';
+    systemPrompt += '\n3. The entire game code MUST be below 50,000 tokens. Keep it concise but fully functional.';
+    systemPrompt += '\n4. Use placeholder colored rectangles and simple shapes for all graphics — no image assets needed.';
+    systemPrompt += '\n5. The game must be immediately playable with no setup, no loading screens, no external dependencies.';
 
-    // Always use single file mode
-    systemPrompt += '\n\nIMPORTANT: Deliver the ENTIRE game in a SINGLE HTML file including all CSS and JavaScript. Ensure all logic is contained within the file. Do NOT split into separate files.';
+    // ── MANDATORY PLAYER ENTITY ──
+    systemPrompt += '\n\n═══ MANDATORY PLAYER ENTITY ═══';
+    systemPrompt += '\nEvery game MUST have a visible, controllable player character:';
+    systemPrompt += '\n- The player is drawn as a distinct colored shape (minimum 24x24 pixels) that is clearly visible against the background.';
+    systemPrompt += '\n- The player MUST respond to keyboard input in real time — movement must feel immediate and smooth.';
+    systemPrompt += '\n- The player MUST be drawn every frame during gameplay (in the render/update loop).';
+    systemPrompt += '\n- The player position MUST be stored in variables (x, y) and updated based on input.';
+    systemPrompt += '\n- The player MUST be constrained to the canvas boundaries (cannot move off-screen).';
 
-    // Token limit constraint
-    systemPrompt += '\n\nCRITICAL: The entire game code MUST be below 50,000 tokens. Keep the code concise and efficient while maintaining full functionality.';
+    // ── MANDATORY CONTROLS ──
+    systemPrompt += '\n\n═══ MANDATORY CONTROLS ═══';
+    systemPrompt += '\nEvery game MUST implement keyboard controls using event listeners:';
+    systemPrompt += '\n- Use Arrow Keys and/or WASD for movement (left, right, up, down).';
+    systemPrompt += '\n- Use SPACEBAR for the primary action (jump, shoot, interact, etc.).';
+    systemPrompt += '\n- Track key states with a keys object: listen for keydown and keyup events, store true/false per key.';
+    systemPrompt += '\n- Read key states inside the update() function for smooth, continuous movement (do NOT move on keydown event alone).';
+    systemPrompt += '\n- Display on-screen control instructions on the Title Screen or during gameplay (e.g. "Arrow Keys to Move, SPACE to Shoot").';
+    systemPrompt += '\n- Use e.preventDefault() for arrow keys and spacebar to prevent page scrolling.';
 
-    // Always include framework instruction
-    systemPrompt += `\n\nUse ${TECH_DEFAULTS.framework} for rendering and game logic.`;
+    // ── MANDATORY GAME LOOP ──
+    systemPrompt += '\n\n═══ MANDATORY GAME LOOP ═══';
+    systemPrompt += '\nEvery game MUST have a proper game loop:';
+    systemPrompt += '\n- Use requestAnimationFrame for the main loop.';
+    systemPrompt += '\n- Separate logic into update() (game state, movement, collisions) and render() (drawing to canvas) functions.';
+    systemPrompt += '\n- Call update() then render() each frame inside the requestAnimationFrame callback.';
+    systemPrompt += '\n- Only run the game loop when the game state is PLAYING. Stop or pause the loop when in TITLE, PAUSED, or GAME_OVER states.';
+    systemPrompt += '\n- Use a delta time or fixed timestep so the game runs at a consistent speed.';
 
-    // Mandatory game structure
-    systemPrompt += '\n\nMANDATORY GAME STRUCTURE: Every game you generate MUST include:';
-    systemPrompt += '\n1. A Title Screen / Main Menu that appears first when the game loads.';
-    systemPrompt += '\n2. The Title Screen must show the game title and have clearly styled, clickable buttons (at minimum "Start Game").';
-    systemPrompt += '\n3. Pressing ESC during gameplay MUST pause the game and show a Pause Menu (unless the user specifies ESC should do nothing).';
-    systemPrompt += '\n4. The Pause Menu must include "Resume" and "Back to Menu" buttons.';
-    systemPrompt += '\n5. A Game Over screen with the final score and a "Play Again" / "Retry" button.';
-    systemPrompt += '\n6. All navigation between game states (Title Screen → Gameplay → Pause → Game Over) must be seamless with no page reloads.';
-    systemPrompt += '\n7. Use a state machine or game state variable to manage transitions between: TITLE, PLAYING, PAUSED, GAME_OVER.';
-    systemPrompt += '\n8. All menu buttons must be consistently styled, clearly visible, and have hover effects.';
+    // ── MANDATORY BUTTON IMPLEMENTATION ──
+    systemPrompt += '\n\n═══ MANDATORY BUTTON IMPLEMENTATION ═══';
+    systemPrompt += '\nAll menu buttons MUST be real HTML <button> elements — NEVER draw buttons on the canvas.';
+    systemPrompt += '\n- Create buttons as <button> elements in the HTML, positioned over the canvas using CSS absolute positioning with z-index.';
+    systemPrompt += '\n- Each button MUST have a unique id (e.g. id="btn-start", id="btn-resume", id="btn-menu", id="btn-retry").';
+    systemPrompt += '\n- Attach click handlers with addEventListener("click", handlerFunction).';
+    systemPrompt += '\n- Style buttons with CSS: cursor:pointer, padding, border-radius, background color, font size, and a :hover effect (e.g. background color change or brightness).';
+    systemPrompt += '\n- Show/hide menus by toggling style.display (none/block) on a container div — do NOT recreate buttons each time.';
+    systemPrompt += '\n- Buttons must be large enough to click easily (minimum 140px wide, 40px tall) and centered on screen.';
+    systemPrompt += '\n- Required buttons by game state:';
+    systemPrompt += '\n  • TITLE screen: "Start Game" button (id="btn-start"). Plus any additional menu options requested.';
+    systemPrompt += '\n  • PAUSE menu: "Resume" button (id="btn-resume") and "Back to Menu" button (id="btn-menu").';
+    systemPrompt += '\n  • GAME OVER screen: "Play Again" / "Retry" button (id="btn-retry") and optionally "Back to Menu" (id="btn-gameover-menu").';
 
-    // ── User Prompt: Game Concept ──
+    // ── MANDATORY HUD ──
+    systemPrompt += '\n\n═══ MANDATORY HUD (Heads-Up Display) ═══';
+    systemPrompt += '\nEvery game MUST display at least one HUD element during gameplay:';
+    systemPrompt += '\n- Draw HUD text on the canvas using ctx.fillText() in the render() function.';
+    systemPrompt += '\n- Position HUD in a corner (e.g. top-left for score, top-right for health/lives).';
+    systemPrompt += '\n- Use a font size of at least 16px with a contrasting color (or outlined text) so it is readable against the game background.';
+    systemPrompt += '\n- At minimum display the score. If the genre involves health or lives, display those too.';
+
+    // ── MANDATORY GAME STRUCTURE (State Machine) ──
+    systemPrompt += '\n\n═══ MANDATORY GAME STRUCTURE (State Machine) ═══';
+    systemPrompt += '\nEvery game MUST use a state variable (e.g. let gameState = "TITLE") to manage transitions:';
+    systemPrompt += '\n- TITLE: The initial state when the game loads. Show the Title Screen with the game title and menu buttons. The canvas can show a background color or simple animation. The game loop should NOT update gameplay in this state.';
+    systemPrompt += '\n- PLAYING: Active gameplay. The game loop runs update() and render(). The player can move and interact. ESC transitions to PAUSED.';
+    systemPrompt += '\n- PAUSED: The game is frozen (no update). Show a Pause Menu overlay with "Resume" and "Back to Menu" buttons. Resume returns to PLAYING, Back to Menu returns to TITLE.';
+    systemPrompt += '\n- GAME_OVER: Show the final score and a "Play Again" / "Retry" button. Play Again restarts the game (resets score, health, position). Optionally include "Back to Menu".';
+    systemPrompt += '\n- All transitions MUST happen without page reloads. Reset game variables (score, health, player position, enemies) when starting/restarting gameplay.';
+    systemPrompt += '\n- Listen for the Escape key (keydown) during PLAYING state to transition to PAUSED.';
+
+    // ── Genre-Specific Requirements ──
+    const genre = state.coreIdentity.genre;
+    if (genre && GENRE_REQUIREMENTS[genre]) {
+      systemPrompt += `\n\n═══ MANDATORY ${genre.toUpperCase()} REQUIREMENTS ═══`;
+      systemPrompt += `\nBecause the genre is "${genre}", the game MUST include ALL of the following:`;
+      GENRE_REQUIREMENTS[genre].forEach((req, i) => {
+        systemPrompt += `\n${i + 1}. ${req}`;
+      });
+    }
+
+    // ═════════════════════════════════════════════
+    // USER PROMPT — Module configuration + output instructions
+    // ═════════════════════════════════════════════
     let userPrompt = '';
 
     if (enabled.coreIdentity) {
@@ -346,7 +565,7 @@
       userPrompt += '\n';
     }
 
-    // Tech stack is always included in background
+    // Tech stack is always included
     userPrompt += '**Technical Instructions:**\n';
     userPrompt += `- Framework: ${TECH_DEFAULTS.framework}\n`;
     userPrompt += `- Single File: Yes\n`;
@@ -360,23 +579,36 @@
       userPrompt += '\n';
     }
 
+    // ── Output Requirements + Completeness Checklist ──
     userPrompt += '**Output Requirements:**\n';
-    userPrompt += '- Generate a complete, playable game based on the above specifications.\n';
+    userPrompt += '- Generate a complete, playable game based on the above specifications and the mandatory rules in the system prompt.\n';
     userPrompt += '- Include all necessary HTML, CSS, and JavaScript in a SINGLE self-contained HTML file.\n';
     userPrompt += '- Make the game immediately playable with no additional setup.\n';
-    userPrompt += '- Add clear visual feedback for all player actions.\n';
+    userPrompt += '- Add clear visual feedback for all player actions (movement, collisions, score changes).\n';
     userPrompt += '- Include a HUD showing score/health/lives/timer as applicable.\n';
     userPrompt += '\n';
-    userPrompt += '**MANDATORY Game Structure Requirements:**\n';
-    userPrompt += '- The game MUST have a Title Screen / Main Menu that appears first when the game loads.\n';
-    userPrompt += '- The Title Screen MUST include at minimum: the game title, a "Start Game" button, and any other menu options specified above.\n';
-    userPrompt += '- Pressing ESC during gameplay MUST pause the game and show a Pause Menu (unless ESC behavior is set to "Nothing").\n';
-    userPrompt += '- The Pause Menu MUST include a "Resume" button and a "Back to Menu" button that returns to the Title Screen.\n';
-    userPrompt += '- The game MUST have a Game Over screen with the final score and a "Play Again" or "Retry" button.\n';
-    userPrompt += '- All buttons in menus MUST be clearly styled, hoverable, and clickable — use consistent button styling throughout.\n';
-    userPrompt += '- Navigation between game states (Title Screen → Gameplay → Pause → Game Over) MUST be seamless with no page reloads.\n';
-    userPrompt += '- Use a state machine or game state variable to manage transitions between: TITLE, PLAYING, PAUSED, GAME_OVER.\n';
-    userPrompt += '- The entire game code MUST be under 50,000 tokens. Keep the code concise and efficient while maintaining full functionality.\n';
+    userPrompt += '**COMPLETENESS CHECKLIST — verify before outputting:**\n';
+    userPrompt += 'Before you output the code, mentally verify your game includes ALL of the following:\n';
+    userPrompt += '☐ A visible player character that responds to keyboard controls\n';
+    userPrompt += '☐ Working keyboard controls (Arrow keys/WASD + Spacebar) with keydown/keyup listeners\n';
+    userPrompt += '☐ A game loop using requestAnimationFrame with separate update() and render() functions\n';
+    userPrompt += '☐ At least one core game mechanic (movement, shooting, jumping, collecting, etc.)\n';
+    userPrompt += '☐ Collision detection where applicable (player vs. enemies/obstacles/items)\n';
+    userPrompt += '☐ Score or progress tracking displayed in the HUD\n';
+    userPrompt += '☐ HTML <button> elements (NOT canvas-drawn) for all menu buttons, with addEventListener click handlers\n';
+    userPrompt += '☐ Title Screen with "Start Game" button that works\n';
+    userPrompt += '☐ Pause Menu (ESC key) with "Resume" and "Back to Menu" buttons that work\n';
+    userPrompt += '☐ Game Over screen with "Play Again"/"Retry" button that works\n';
+    userPrompt += '☐ All game state transitions work without page reloads\n';
+    if (genre && GENRE_REQUIREMENTS[genre]) {
+      userPrompt += `☐ All ${genre}-specific requirements listed in the system prompt are implemented\n`;
+    }
+    userPrompt += '\n';
+    userPrompt += '**OUTPUT FORMAT:**\n';
+    userPrompt += '- Output ONLY the HTML code. Start with <!DOCTYPE html> and end with </html>.\n';
+    userPrompt += '- Do NOT include any explanations, introductions, or text before or after the code.\n';
+    userPrompt += '- Do NOT wrap the code in markdown code fences (no ```html or ``` markers).\n';
+    userPrompt += '- Output the raw HTML directly so it can be rendered immediately.\n';
 
     return { systemPrompt, userPrompt };
   }
@@ -406,6 +638,38 @@
   }
 
   // ═══════════════════════════════════════════════
+  // GENRE-BASED AUTO-CONFIGURATION
+  // ═══════════════════════════════════════════════
+
+  function applyGenreDefaults(genre) {
+    if (!genre || !GENRE_DEFAULTS[genre]) return;
+
+    const defaults = GENRE_DEFAULTS[genre];
+
+    // Apply genre-specific defaults to state
+    if (defaults.mechanics) {
+      state.mechanics.tags = [...defaults.mechanics];
+    }
+    if (defaults.hudElements) {
+      state.gameMenu.hudElements = [...defaults.hudElements];
+    }
+    if (defaults.gameActions) {
+      state.gameMenu.gameActions = [...defaults.gameActions];
+    }
+    if (defaults.menuOptions) {
+      state.gameMenu.menuOptions = [...defaults.menuOptions];
+    }
+
+    // Re-sync the UI to reflect the new state
+    syncUIFromState();
+    updatePromptPreview();
+    saveState();
+    displayConflicts();
+
+    showToast(`Applied ${genre} defaults — adjust as needed`, 'info', 4000);
+  }
+
+  // ═══════════════════════════════════════════════
   // CONFLICT VALIDATION
   // ═══════════════════════════════════════════════
 
@@ -415,16 +679,6 @@
     // Permadeath + Idle (unusual combo)
     if (state.mechanics.tags.includes('Permadeath') && state.coreIdentity.genre === 'Idle') {
       conflicts.push('Permadeath in an Idle game can be frustrating. Consider removing one or the other.');
-    }
-
-    // No menu type selected but game actions selected
-    if (state.gameMenu.menuType === 'No Menu' && state.gameMenu.gameActions.length > 0) {
-      conflicts.push('You selected "No Menu" but also chose game actions. These actions need a menu to appear in.');
-    }
-
-    // ESC set to "Nothing" but Pause/Resume selected
-    if (state.gameMenu.escBehavior === 'Nothing' && state.gameMenu.gameActions.includes('Pause/Resume (ESC)')) {
-      conflicts.push('ESC is set to "Nothing" but "Pause/Resume (ESC)" is selected as a game action. These conflict.');
     }
 
     return conflicts;
@@ -762,11 +1016,12 @@
   function extractCode(response) {
     // Try to extract from markdown code fences
     // Patterns: ```html ... ```, ```javascript ... ```, ``` ... ```
+    // Allow optional whitespace after the language identifier
     const patterns = [
-      /```html\s*\n([\s\S]*?)```/i,
-      /```javascript\s*\n([\s\S]*?)```/i,
-      /```js\s*\n([\s\S]*?)```/i,
-      /```\s*\n([\s\S]*?)```/,
+      /```html\s*?\n([\s\S]*?)```/i,
+      /```javascript\s*?\n([\s\S]*?)```/i,
+      /```js\s*?\n([\s\S]*?)```/i,
+      /```\s*?\n([\s\S]*?)```/,
     ];
 
     for (const pattern of patterns) {
@@ -778,8 +1033,21 @@
 
     // If no fences found, check if the response looks like HTML
     const trimmed = response.trim();
-    if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.startsWith('<head')) {
+    if (trimmed.toLowerCase().startsWith('<!doctype') || trimmed.toLowerCase().startsWith('<html') || trimmed.toLowerCase().startsWith('<head')) {
       return trimmed;
+    }
+
+    // Check if response contains HTML somewhere (AI may have added intro text)
+    const htmlStart = trimmed.search(/<!DOCTYPE\s+html/i);
+    if (htmlStart !== -1) {
+      // Extract from <!DOCTYPE html> to the end
+      const fromDoctype = trimmed.slice(htmlStart);
+      // Try to find the closing </html> tag
+      const htmlEnd = fromDoctype.lastIndexOf('</html>');
+      if (htmlEnd !== -1) {
+        return fromDoctype.slice(0, htmlEnd + 7).trim();
+      }
+      return fromDoctype.trim();
     }
 
     // Last resort: return the whole response
@@ -851,6 +1119,38 @@
   }
 
   // ═══════════════════════════════════════════════
+  // CODE VALIDATION
+  // ═══════════════════════════════════════════════
+
+  function validateGameCode(code) {
+    const warnings = [];
+
+    // Check for essential game elements using regex
+    const checks = [
+      { pattern: /<canvas/i, label: 'canvas element' },
+      { pattern: /requestAnimationFrame|setInterval/i, label: 'game loop (requestAnimationFrame)' },
+      { pattern: /addEventListener/i, label: 'event listeners' },
+      { pattern: /keydown|keyup/i, label: 'keyboard input handling (keydown/keyup)' },
+      { pattern: /ctx\./i, label: 'canvas rendering calls (ctx.)' },
+      { pattern: /<button|createElement\s*\(\s*['"]button/i, label: 'HTML buttons for menus' },
+    ];
+
+    checks.forEach(check => {
+      if (!check.pattern.test(code)) {
+        warnings.push(check.label);
+      }
+    });
+
+    return warnings;
+  }
+
+  function showValidationWarnings(warnings) {
+    if (warnings.length === 0) return;
+    const message = '⚠️ Game may be missing: ' + warnings.join(', ') + '. Try refining or regenerating.';
+    showToast(message, 'warning', 6000);
+  }
+
+  // ═══════════════════════════════════════════════
   // GENERATE GAME
   // ═══════════════════════════════════════════════
 
@@ -895,6 +1195,10 @@
       }
 
       renderInIframe(code);
+
+      // Validate the generated code for essential elements
+      const warnings = validateGameCode(code);
+      showValidationWarnings(warnings);
 
       // Save to history
       saveToHistory(code);
@@ -943,6 +1247,10 @@
       }
 
       renderInIframe(code);
+
+      // Validate the refined code for essential elements
+      const warnings = validateGameCode(code);
+      showValidationWarnings(warnings);
 
       // Update history entry
       saveToHistory(code, true);
@@ -1379,6 +1687,17 @@
       }
     });
 
+    // ── Genre change: auto-apply genre defaults ──
+    const genreSelect = document.getElementById('genre');
+    if (genreSelect) {
+      genreSelect.addEventListener('change', () => {
+        const selectedGenre = genreSelect.value;
+        if (selectedGenre) {
+          applyGenreDefaults(selectedGenre);
+        }
+      });
+    }
+
     // ── All data-path fields: auto-save on change ──
     document.querySelectorAll('[data-path]').forEach(el => {
       const eventType = (el.type === 'range' || el.type === 'color') ? 'input' : 'change';
@@ -1658,12 +1977,14 @@
         resetBtn.disabled = true;
         showToast('Prompt locked — using your edited version', 'info');
       }
+      saveState();
     });
 
     // ── Save prompt edits on input ──
     document.getElementById('prompt-preview').addEventListener('input', () => {
       if (!promptLocked) {
         customPromptText = document.getElementById('prompt-preview').textContent;
+        saveState();
       }
     });
 
@@ -1675,6 +1996,7 @@
       const defaultText = `=== SYSTEM PROMPT ===\n${systemPrompt}\n\n=== USER PROMPT ===\n${userPrompt}`;
       document.getElementById('prompt-preview').textContent = defaultText;
       customPromptText = defaultText;
+      saveState();
       showToast('Prompt reset to auto-generated default', 'success');
     });
 
@@ -1753,6 +2075,43 @@
   window.__deleteTemplate = deleteTemplate;
 
   // ═══════════════════════════════════════════════
+  // RESTORE PROMPT LOCK UI STATE
+  // ═══════════════════════════════════════════════
+
+  function restorePromptLockUI() {
+    const btn = document.getElementById('btn-lock-prompt');
+    const preview = document.getElementById('prompt-preview');
+    const warning = document.getElementById('prompt-edit-warning');
+    const resetBtn = document.getElementById('btn-reset-prompt');
+    if (!btn || !preview) return;
+
+    if (!promptLocked) {
+      // Unlocked state — restore editable mode
+      btn.textContent = '🔓 Unlocked';
+      btn.classList.remove('locked');
+      btn.classList.add('unlocked');
+      preview.classList.remove('prompt-locked');
+      preview.classList.add('prompt-unlocked');
+      preview.contentEditable = 'true';
+      if (customPromptText) {
+        preview.textContent = customPromptText;
+      }
+      if (warning) warning.classList.remove('hidden');
+      if (resetBtn) resetBtn.disabled = false;
+    } else {
+      // Locked state — read-only
+      btn.textContent = '🔒 Locked';
+      btn.classList.add('locked');
+      btn.classList.remove('unlocked');
+      preview.classList.add('prompt-locked');
+      preview.classList.remove('prompt-unlocked');
+      preview.contentEditable = 'false';
+      if (warning) warning.classList.add('hidden');
+      if (resetBtn) resetBtn.disabled = true;
+    }
+  }
+
+  // ═══════════════════════════════════════════════
   // INITIALIZATION
   // ═══════════════════════════════════════════════
 
@@ -1766,6 +2125,9 @@
 
     // Build initial prompt preview
     updatePromptPreview();
+
+    // Restore prompt lock UI state from persisted state
+    restorePromptLockUI();
 
     // Set up all event listeners
     initEventListeners();
