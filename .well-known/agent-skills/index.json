@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "game-generation",
+      "description": "Generate complete, playable HTML5 games from modular design parameters (genre, mechanics, art style, menus, audio) using AI. Outputs a self-contained HTML file.",
+      "url": "https://aigamecreator.netlify.app/.well-known/agent-skills/game-generation/SKILL.md",
+      "version": "1.0.0",
+      "tags": ["game-development", "html5", "ai", "prompt-engineering", "no-code"]
+    }
+  ]
+}

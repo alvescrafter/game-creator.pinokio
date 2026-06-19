@@ -1,0 +1,257 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AI Game Creator — Capability Description",
+    "description": "This OpenAPI spec describes the conceptual inputs and outputs of the AI Game Creator's game generation pipeline. The actual application runs entirely client-side in the browser — there is no server endpoint to call. This spec exists so AI agents and developers can understand the app's capabilities for integration planning.\n\nTo actually generate games, a user must:\n1. Open https://aigamecreator.netlify.app/ in a browser\n2. Configure an AI provider (OpenAI, Gemini, Claude, Ollama, or LM Studio) in Settings\n3. Configure game parameters in the sidebar\n4. Click Generate Game\n\nThe app assembles the configuration into a detailed prompt, sends it to the chosen AI provider, and returns a complete HTML5 game.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AI Game Creator",
+      "url": "https://aigamecreator.netlify.app/"
+    },
+    "license": {
+      "name": "Free",
+      "url": "https://aigamecreator.netlify.app/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://aigamecreator.netlify.app",
+      "description": "Web application (client-side only, no API server)"
+    }
+  ],
+  "paths": {
+    "/generate": {
+      "post": {
+        "summary": "Generate a complete HTML5 game",
+        "description": "Conceptual endpoint describing the game generation pipeline. The actual implementation runs in the browser — the app assembles the configuration into a prompt, sends it to the user's chosen AI provider, and returns a self-contained HTML5 game. This is not a callable server endpoint.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A complete, self-contained HTML5 game",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "A complete HTML5 game with inline CSS and JavaScript, including Title Screen, Pause Menu (ESC), and Game Over screen."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refine": {
+      "post": {
+        "summary": "Refine an existing generated game",
+        "description": "Conceptual endpoint for incremental game refinement. Takes the current game HTML and a natural language refinement instruction, returns an updated game. This is not a callable server endpoint.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "An updated, self-contained HTML5 game",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "An updated HTML5 game with the refinement applied."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GameConfig": {
+        "type": "object",
+        "description": "Configuration for game generation. Mirrors the sidebar modules in the web app.",
+        "properties": {
+          "genre": {
+            "type": "string",
+            "enum": ["Platformer", "RPG", "Puzzle", "Shooter", "Idle", "Racing", "Strategy", "Roguelike", "Simulation", "Visual Novel"],
+            "description": "The game genre."
+          },
+          "setting_theme": {
+            "type": "string",
+            "description": "Free text describing the game world (e.g. 'Cyberpunk Neon City', 'Medieval Forest')."
+          },
+          "tone": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Tone slider: 0 = Dark/Gritty, 100 = Bright/Whimsical."
+          },
+          "mechanics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Double Jump", "Inventory System", "Health Bar", "Gravity", "Permadeath", "Leveling Up", "Crafting", "Stealth", "Procedural Generation", "Physics", "Dialogue System", "Collectibles"]
+            },
+            "description": "Toggleable game mechanics to include."
+          },
+          "specific_rules": {
+            "type": "string",
+            "description": "Free text custom rules (e.g. 'The player loses a life every 30 seconds')."
+          },
+          "difficulty_curve": {
+            "type": "string",
+            "enum": ["Linear", "Exponential", "Random", "S-Curve"],
+            "description": "How difficulty scales over time."
+          },
+          "art_style": {
+            "type": "string",
+            "enum": ["Pixel Art", "Minimalist Vector", "ASCII", "Low-Poly 3D", "Hand-drawn", "Flat Design", "Retro CRT", "Neon Glow"],
+            "description": "Visual art style for the game."
+          },
+          "color_primary": {
+            "type": "string",
+            "description": "Hex color code for primary color."
+          },
+          "color_secondary": {
+            "type": "string",
+            "description": "Hex color code for secondary color."
+          },
+          "color_background": {
+            "type": "string",
+            "description": "Hex color code for background color."
+          },
+          "visual_effects": {
+            "type": "string",
+            "description": "Free text describing visual effects (e.g. 'Screen shake on impact', 'Particle explosions')."
+          },
+          "menu_type": {
+            "type": "string",
+            "enum": ["Title Screen + Pause Menu", "Title Screen Only", "Minimal Overlay", "No Menu"],
+            "description": "Menu structure type."
+          },
+          "menu_options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Start Game", "Continue", "Settings", "How to Play", "High Scores", "Credits", "Quit"]
+            },
+            "description": "Menu options to include."
+          },
+          "hud_elements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Score", "Health Bar", "Lives", "Timer", "Level Indicator", "Minimap", "Inventory Bar", "Combo Counter"]
+            },
+            "description": "HUD elements to display during gameplay."
+          },
+          "game_actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Pause/Resume (ESC)", "Restart Level", "Save Game", "Load Game", "Mute/Unmute", "Back to Menu"]
+            },
+            "description": "Standard game actions available to the player."
+          },
+          "game_over_screen": {
+            "type": "string",
+            "enum": ["Score Summary + Retry", "Simple Retry", "Game Over Animation", "Return to Menu"],
+            "description": "Game over screen style."
+          },
+          "esc_behavior": {
+            "type": "string",
+            "enum": ["Pause Game + Show Menu", "Pause Game Only", "Back to Title Screen", "Nothing (disabled)"],
+            "description": "What happens when ESC is pressed."
+          },
+          "music_mood": {
+            "type": "string",
+            "enum": ["Lo-fi", "Orchestral", "8-bit/Chiptune", "Suspenseful", "Upbeat Pop", "Ambient", "No Music"],
+            "description": "Background music mood."
+          },
+          "sfx_requirements": {
+            "type": "string",
+            "description": "Free text describing sound effects (e.g. 'High pitched beep for jumps')."
+          },
+          "framework": {
+            "type": "string",
+            "enum": ["Vanilla JS/Canvas", "Phaser.js", "Three.js", "Kaboom.js", "PixiJS", "Matter.js"],
+            "description": "JavaScript framework to use in the generated game."
+          },
+          "single_file_mode": {
+            "type": "boolean",
+            "default": true,
+            "description": "When true, the AI delivers everything in a single HTML file."
+          },
+          "asset_handling": {
+            "type": "string",
+            "description": "Free text describing how to handle assets (e.g. 'Use placeholder colored rectangles')."
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 256,
+            "maximum": 32768,
+            "default": 50000,
+            "description": "API response token limit. Higher = more complex games but higher cost."
+          },
+          "ai_provider": {
+            "type": "string",
+            "enum": ["OpenAI", "Gemini", "Claude", "Ollama", "LM Studio"],
+            "description": "The AI provider to use for generation. Configured in the app's Settings."
+          },
+          "ai_model": {
+            "type": "string",
+            "description": "The specific model to use (e.g. 'gpt-4o', 'claude-3-opus-20240229')."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "default": 0.7,
+            "description": "Generation temperature. Lower = more precise, higher = more creative."
+          }
+        },
+        "required": ["genre"]
+      },
+      "RefineRequest": {
+        "type": "object",
+        "properties": {
+          "current_game_html": {
+            "type": "string",
+            "description": "The current generated game's HTML content."
+          },
+          "refinement_instruction": {
+            "type": "string",
+            "description": "Natural language instruction for how to refine the game (e.g. 'Make the player move faster', 'Add a score counter')."
+          },
+          "ai_provider": {
+            "type": "string",
+            "enum": ["OpenAI", "Gemini", "Claude", "Ollama", "LM Studio"]
+          },
+          "ai_model": {
+            "type": "string"
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          }
+        },
+        "required": ["current_game_html", "refinement_instruction"]
+      }
+    }
+  }
+}

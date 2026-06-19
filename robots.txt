@@ -1,8 +1,51 @@
 # AI Game Creator — https://aigamecreator.netlify.app/
-# Allow all search engines to crawl and index
+# Explicitly allow all AI crawlers, search bots, and training agents.
 
 User-agent: *
 Allow: /
 
-# Sitemap
+# --- OpenAI ---
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+# --- Anthropic ---
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# --- Perplexity ---
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: PerplexityBot-1
+Allow: /
+
+# --- Google ---
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# --- Common Crawl ---
+User-agent: CCBot
+Allow: /
+
+# --- Amazon ---
+User-agent: Amazonbot
+Allow: /
+
+# --- Meta ---
+User-agent: FacebookBot
+Allow: /
+
+# --- Sitemap ---
 Sitemap: https://aigamecreator.netlify.app/sitemap.xml

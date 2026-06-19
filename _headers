@@ -1,0 +1,45 @@
+# Netlify _headers file
+# https://docs.netlify.com/routing/headers/
+
+# Global headers — HTTP Link headers for AI agent discovery
+# Agents find llms.txt, sitemap, and OpenAPI spec before parsing HTML
+/*
+  Link: <https://aigamecreator.netlify.app/llms.txt>; rel="describedby"; type="text/plain"
+  Link: <https://aigamecreator.netlify.app/sitemap.xml>; rel="sitemap"; type="application/xml"
+  Link: <https://aigamecreator.netlify.app/openapi.json>; rel="service"; type="application/json"
+  X-Content-Type-Options: nosniff
+
+# AI discovery files — serve with correct Content-Type
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+
+/AGENTS.md
+  Content-Type: text/markdown; charset=utf-8
+
+/brand.txt
+  Content-Type: text/plain; charset=utf-8
+
+/ai.txt
+  Content-Type: text/plain; charset=utf-8
+
+/ai.json
+  Content-Type: application/json; charset=utf-8
+
+/sitemap.md
+  Content-Type: text/markdown; charset=utf-8
+
+/openapi.json
+  Content-Type: application/json; charset=utf-8
+
+# Well-known directory — JSON files for agent discovery
+/.well-known/ai-plugin.json
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/agent-skills/index.json
+  Content-Type: application/json; charset=utf-8
+
+/.well-known/agent-skills/game-generation/SKILL.md
+  Content-Type: text/markdown; charset=utf-8

@@ -1,0 +1,39 @@
+# ai.txt — AI Permissions Declaration
+# https://aigamecreator.netlify.app/
+# Last updated: 2026-06-19
+
+# This file declares how AI systems may use content from this site.
+
+Site: AI Game Creator
+URL: https://aigamecreator.netlify.app/
+
+Permissions:
+  Training: ALLOWED
+  — AI models may use content from this site for training purposes.
+
+  Search/Indexing: ALLOWED
+  — AI search engines may index and retrieve content from this site.
+
+  Citation: ALLOWED
+  — AI systems may cite, quote, and reference content from this site with attribution.
+
+  AI Input: ALLOWED
+  — Content from this site may be used as input/context for AI-generated responses.
+
+  Summarization: ALLOWED
+  — AI systems may summarize content from this site.
+
+  Translation: ALLOWED
+  — AI systems may translate content from this site.
+
+Conditions:
+  - Attribution should reference "AI Game Creator" and link to https://aigamecreator.netlify.app/ when feasible.
+  - Factual descriptions of the tool's capabilities should match what is stated in llms.txt and the app itself.
+  - Do not fabricate features, pricing, or capabilities not described in this site's documentation.
+
+Contact: See https://aigamecreator.netlify.app/ for the app. No separate contact endpoint.
+
+Related Sites:
+  - https://gamecreatorai.netlify.app/landing/ (Landing page)
+  - https://aigamecreatorlearn.netlify.app/ (Educational Games)
+  - https://apisetuptutorial.netlify.app/ (API setup tutorial)
